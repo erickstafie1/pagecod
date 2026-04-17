@@ -12,5 +12,5 @@ export const PRICES = {
 export function getPrice(credits) {
   if (PRICES[credits]) return PRICES[credits]
   return credits * 35
-}
+} 
 
