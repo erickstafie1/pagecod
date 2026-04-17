@@ -6,37 +6,65 @@ import Dashboard from './pages/Dashboard.jsx'
 import Generator from './pages/Generator.jsx'
 import Pricing from './pages/Pricing.jsx'
 
+function getPage(path, user) {
+  if (path === '/' || path === '') return user ? 'dashboard' : 'landing'
+  if (path === '/login' || path === '/auth') return 'auth'
+  if (path === '/dashboard') return 'dashboard'
+  if (path === '/generate') return 'generator'
+  if (path === '/pricing') return 'pricing'
+  return user ? 'dashboard' : 'landing'
+}
+
 export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState('landing')
+  const [page, setPage] = useState(() => getPage(window.location.pathname, null))
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+      const u = session?.user ?? null
+      setUser(u)
       setLoading(false)
-      if (session?.user) setPage('dashboard')
+      // Seteaza pagina bazata pe URL curent si user
+      const currentPath = window.location.pathname
+      if (currentPath === '/' || currentPath === '') {
+        setPage(u ? 'dashboard' : 'landing')
+      } else {
+        setPage(getPage(currentPath, u))
+      }
     })
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) setPage('dashboard')
-      else setPage('landing')
+      const u = session?.user ?? null
+      setUser(u)
+      if (u && (page === 'landing' || page === 'auth')) {
+        navigate('dashboard')
+      } else if (!u) {
+        navigate('landing')
+      }
     })
-    return () => subscription.unsubscribe()
+
+    // Ascult la back/forward browser
+    const handlePop = () => {
+      setPage(getPage(window.location.pathname, user))
+    }
+    window.addEventListener('popstate', handlePop)
+
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('popstate', handlePop)
+    }
   }, [])
 
-  // URL-based routing simplu
-  useEffect(() => {
-    const path = window.location.pathname
-    if (path === '/pricing') setPage('pricing')
-    else if (path === '/login') setPage('auth')
-    else if (path === '/dashboard' && user) setPage('dashboard')
-    else if (path === '/generate' && user) setPage('generator')
-  }, [user])
-
   const navigate = (p) => {
-    window.history.pushState({}, '', '/' + (p === 'landing' ? '' : p))
+    const paths = {
+      landing: '/', auth: '/login', dashboard: '/dashboard',
+      generator: '/generate', pricing: '/pricing'
+    }
+    const path = paths[p] || '/'
+    window.history.pushState({}, '', path)
     setPage(p)
+    window.scrollTo(0, 0)
   }
 
   if (loading) return (
@@ -49,8 +77,8 @@ export default function App() {
   const props = { user, navigate }
 
   if (page === 'auth') return <Auth {...props} />
-  if (page === 'dashboard') return <Dashboard {...props} />
-  if (page === 'generator') return <Generator {...props} />
+  if (page === 'dashboard') return user ? <Dashboard {...props} /> : <Auth {...props} />
+  if (page === 'generator') return user ? <Generator {...props} /> : <Auth {...props} />
   if (page === 'pricing') return <Pricing {...props} />
   return <Landing {...props} />
 }
