@@ -416,16 +416,17 @@ export default function Generator({ user, navigate }) {
       )}
 
       {/* PREVIEW AREA */}
-      <div style={{ flex:1, overflow:'auto', padding:'20px', display:'flex', justifyContent:'center', background:'#13131a' }}>
+      <div style={{ flex:1, overflowY:'auto', overflowX:'hidden', padding:'20px', display:'flex', justifyContent:'center', background:'#13131a', WebkitOverflowScrolling:'touch' }}>
         <div style={{
           width: device === 'mobile' ? 390 : '100%',
           maxWidth: device === 'mobile' ? 390 : 1200,
           border: device === 'mobile' ? '8px solid #333' : '1px solid rgba(255,255,255,0.1)',
           borderRadius: device === 'mobile' ? 40 : 12,
-          overflow:'hidden',
+          overflow:'visible',
           boxShadow: device === 'mobile' ? '0 20px 60px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.3)',
           background:'#fff',
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
+          alignSelf:'flex-start'
         }}>
           <LandingPreview data={pageData} setData={setPageData} em={em} />
         </div>
