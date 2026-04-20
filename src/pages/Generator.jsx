@@ -1,4 +1,4 @@
-function generateHTML(data) {
+function generateLiquid(data) {
   const price = data.price || 149
   const oldPrice = data.oldPrice || Math.round(price * 1.6)
   const bumpPrice = data.bumpPrice || 29
@@ -7,14 +7,176 @@ function generateHTML(data) {
   const hero = imgs[0] || ''
   const ctx = imgs.slice(1)
   const JUDETE = ["Alba","Arad","Argeș","Bacău","Bihor","Bistrița-Năsăud","Botoșani","Brăila","Brașov","București","Buzău","Călărași","Caraș-Severin","Cluj","Constanța","Covasna","Dâmbovița","Dolj","Galați","Giurgiu","Gorj","Harghita","Hunedoara","Ialomița","Iași","Ilfov","Maramureș","Mehedinți","Mureș","Neamț","Olt","Prahova","Sălaj","Satu Mare","Sibiu","Suceava","Teleorman","Timiș","Tulcea","Vâlcea","Vaslui","Vrancea"]
-  const bHtml = (data.benefits||[]).slice(0,3).map(b=>`<div style="display:flex;gap:12px;align-items:flex-start;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px 14px;margin-bottom:10px"><span style="color:#16a34a;font-weight:900;font-size:17px;flex-shrink:0">✓</span><span style="font-size:14px;color:#166534;line-height:1.6">${b}</span></div>`).join('')
-  const b2Html = (data.benefits||[]).slice(3).map(b=>`<div style="display:flex;gap:12px;align-items:flex-start;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px 14px;margin-bottom:10px"><span style="color:#16a34a;font-weight:900;font-size:17px;flex-shrink:0">✓</span><span style="font-size:14px;color:#166534;line-height:1.6">${b}</span></div>`).join('')
-  const hwHtml = (data.howItWorks||[]).map((s,i)=>`<div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px"><div style="min-width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex-shrink:0">${i+1}</div><div style="padding-top:4px"><strong style="font-size:15px;font-weight:700;display:block;margin-bottom:3px">${s.title}</strong><span style="font-size:13px;color:#6b7280;line-height:1.6">${s.desc}</span></div></div>`).join('')
-  const tHtml = (data.testimonials||[]).map(t=>`<div style="background:#fff;border:1px solid #f3f4f6;border-radius:14px;padding:14px 16px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center"><div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#fecaca,#fca5a5);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#dc2626">${(t.name||'?').charAt(0)}</div><div><strong style="font-size:14px;font-weight:700;display:block">${t.name}</strong><span style="font-size:12px;color:#9ca3af">${t.city}</span></div></div><span style="color:#fbbf24;font-size:16px">${'★'.repeat(t.stars||5)}</span></div><p style="font-size:14px;color:#374151;line-height:1.6;margin:0">"${t.text}"</p></div>`).join('')
-  const fHtml = (data.faq||[]).map(f=>`<details style="margin-bottom:10px;border:1.5px solid #f3f4f6;border-radius:12px;overflow:hidden"><summary style="padding:14px 16px;font-size:14px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#fafafa">${f.q} <span style="color:#dc2626;font-size:20px;margin-left:12px">+</span></summary><div style="padding:12px 16px"><p style="font-size:14px;color:#6b7280;line-height:1.7;margin:0">${f.a}</p></div></details>`).join('')
-  const imgS = (src,alt) => src ? `<img src="${src}" alt="${alt}" style="width:100%;height:300px;object-fit:cover;display:block" onerror="this.style.display='none'">` : ''
-  const jOpts = JUDETE.map(j=>`<option value="${j}">${j}</option>`).join('')
-  return `<!DOCTYPE html>\n<html lang="ro">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1.0">\n<title>${data.productName}</title>\n<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#fff;color:#111;max-width:600px;margin:0 auto}.inp{padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;font-size:15px;outline:none;width:100%;font-family:inherit}.btn{width:100%;padding:16px;border-radius:12px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;font-size:17px;font-weight:800;cursor:pointer}.timer{display:flex;gap:8px;justify-content:center}.tv{background:#111;color:#fff;border-radius:8px;padding:10px 18px;font-size:26px;font-weight:900;font-family:monospace;min-width:56px;display:block;text-align:center}.tl{font-size:10px;color:#999;margin-top:3px;letter-spacing:2px;display:block;text-align:center}#success{display:none;text-align:center;padding:60px 24px}</style>\n</head>\n<body>\n<div id="page">\n<div style="background:#111;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600">🚚 LIVRARE GRATUITĂ peste 200 lei · ☎ 0700 000 000</div>\n<div style="background:#dc2626;color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px"><div style="font-size:13px;font-weight:700">⚡ Doar <strong>${data.stock||7} bucăți</strong> rămase!</div><div class="timer" id="t1"></div></div>\n${imgS(hero,data.productName)}\n<div style="padding:24px 20px 16px"><div style="display:inline-block;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;margin-bottom:12px">OFERTĂ SPECIALĂ · -${disc}% REDUCERE</div><h1 style="font-size:24px;font-weight:900;line-height:1.25;margin:0 0 10px">${data.headline}</h1><p style="font-size:15px;color:#555;line-height:1.7;margin:0 0 20px">${data.subheadline}</p><div style="background:#fafafa;border:1.5px solid #e5e7eb;border-radius:16px;padding:20px;margin-bottom:16px"><div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px"><span id="pd" style="font-size:38px;font-weight:900;color:#dc2626">${price} lei</span><span style="font-size:20px;color:#d1d5db;text-decoration:line-through">${oldPrice} lei</span><span style="background:#dc2626;color:#fff;border-radius:8px;padding:3px 10px;font-size:13px;font-weight:800">-${disc}%</span></div><div style="display:flex;align-items:center;gap:12px"><span style="font-size:14px;color:#6b7280">Cantitate:</span><div style="display:flex;align-items:center;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden"><button onclick="cq(-1)" style="width:38px;height:38px;border:none;background:#f9fafb;font-size:18px;cursor:pointer">−</button><span id="qty" style="width:40px;text-align:center;font-size:17px;font-weight:800">1</span><button onclick="cq(1)" style="width:38px;height:38px;border:none;background:#f9fafb;font-size:18px;cursor:pointer">+</button></div></div></div><button class="btn" onclick="document.getElementById('form').scrollIntoView({behavior:'smooth'})">🛒 COMANDĂ ACUM — PLATĂ LA LIVRARE</button><p style="font-size:12px;color:#9ca3af;text-align:center;margin-top:8px">Nu plătești nimic acum · Livrare 2–4 zile · Ramburs curier</p></div>\n<div style="background:#f9fafb;border-top:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;padding:16px 20px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px"><div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">🔒</span><div><div style="font-size:13px;font-weight:700">Plată securizată</div><div style="font-size:12px;color:#9ca3af">100% sigur</div></div></div><div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">🚚</span><div><div style="font-size:13px;font-weight:700">Livrare rapidă</div><div style="font-size:12px;color:#9ca3af">2–4 zile</div></div></div><div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">↩️</span><div><div style="font-size:13px;font-weight:700">Retur gratuit</div><div style="font-size:12px;color:#9ca3af">30 de zile</div></div></div><div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">⭐</span><div><div style="font-size:13px;font-weight:700">Clienți mulțumiți</div><div style="font-size:12px;color:#9ca3af">4.9/5 stele</div></div></div></div></div>\n${imgS(ctx[0],'produs')}\n<div style="padding:24px 20px"><h2 style="font-size:20px;font-weight:800;margin:0 0 16px">De ce să alegi ${data.productName}?</h2>${bHtml}</div>\n${imgS(ctx[1],'utilizare')}\n<div style="padding:24px 20px"><h2 style="font-size:20px;font-weight:800;margin:0 0 18px">Cum funcționează?</h2>${hwHtml}</div>\n${imgS(ctx[2],'rezultat')}\n<div style="padding:24px 20px"><h2 style="font-size:20px;font-weight:800;margin:0 0 16px">Mai multe motive</h2>${b2Html}</div>\n${imgS(ctx[3],'clienti')}\n<div style="background:#f9fafb;border-top:1px solid #f3f4f6;padding:24px 20px"><h2 style="font-size:20px;font-weight:800;margin:0 0 6px">Ce spun clienții</h2><p style="font-size:13px;color:#9ca3af;margin-bottom:18px">Peste ${(data.reviewCount||1200).toLocaleString()} recenzii ⭐⭐⭐⭐⭐</p>${tHtml}</div>\n<div style="padding:24px 20px"><h2 style="font-size:20px;font-weight:800;margin:0 0 16px">Întrebări frecvente</h2>${fHtml}</div>\n<div id="form" style="background:linear-gradient(180deg,#fef2f2,#fff);border-top:3px solid #dc2626;padding:24px 20px"><div style="text-align:center;margin-bottom:20px"><p style="font-size:13px;font-weight:700;color:#dc2626;margin:0 0 8px">⏰ Oferta expiră în curând:</p><div class="timer" id="t2"></div></div><h2 style="font-size:22px;font-weight:900;margin:0 0 6px">Comandă acum — Plată la livrare</h2><p style="font-size:14px;color:#6b7280;margin:0 0 20px;line-height:1.6">Nu plătești nimic acum.</p><div style="display:flex;flex-direction:column;gap:12px"><input class="inp" id="fn" placeholder="Nume și prenume *"><input class="inp" id="ft" placeholder="Număr de telefon *"><select class="inp" id="fj" style="color:#9ca3af"><option value="">Selectează județul *</option>${jOpts}</select><input class="inp" id="fl" placeholder="Localitatea *"><textarea class="inp" id="fa" rows="2" placeholder="Strada, număr *" style="resize:none"></textarea>${data.bumpProduct?`<label style="display:flex;gap:12px;align-items:flex-start;background:#fffbeb;border:2px dashed #fcd34d;border-radius:12px;padding:14px 16px;cursor:pointer"><input type="checkbox" id="bc" onchange="ut()" style="margin-top:3px;width:18px;height:18px;accent-color:#dc2626"><div><div style="font-size:14px;font-weight:800;color:#92400e;margin-bottom:3px">DA! Adaugă și ${data.bumpProduct}</div><div style="font-size:13px;color:#b45309">Doar +${bumpPrice} lei</div></div></label>`:''}<div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;font-size:14px"><div style="font-weight:700;font-size:12px;color:#9ca3af;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Sumar</div><div style="display:flex;justify-content:space-between;margin-bottom:8px;color:#374151"><span>${data.productName} <span id="ql">×1</span></span><span id="lp" style="font-weight:600">${price} lei</span></div>${data.bumpProduct?`<div id="br" style="display:none;justify-content:space-between;margin-bottom:8px;color:#374151"><span>${data.bumpProduct}</span><span style="font-weight:600">${bumpPrice} lei</span></div>`:''}<div style="display:flex;justify-content:space-between;margin-bottom:8px;color:#374151"><span>Livrare</span><span style="color:#16a34a;font-weight:700">GRATUITĂ</span></div><div style="border-top:1.5px solid #f3f4f6;padding-top:10px;display:flex;justify-content:space-between;font-weight:900;font-size:18px"><span>Total</span><span id="tp" style="color:#dc2626">${price} lei</span></div></div><div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:10px 14px;font-size:13px;color:#15803d;display:flex;gap:8px;align-items:center"><span>🔒</span><span>Plata <strong>doar la livrare</strong>.</span></div><button style="padding:17px;border-radius:14px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(220,38,38,0.4);width:100%" onclick="sub()">🛒 FINALIZEAZĂ — <span id="bt">${price}</span> LEI LA LIVRARE</button><p style="font-size:12px;color:#9ca3af;text-align:center">Prin plasarea comenzii ești de acord cu T&C</p></div></div></div>\n<div style="background:#111;color:#6b7280;padding:20px;text-align:center;font-size:12px"><p style="margin:0 0 4px;color:#9ca3af;font-weight:600">© 2025 ${data.productName}</p><p style="margin:0">Termeni · Confidențialitate · ANPC</p></div>\n</div>\n<div id="success"><div style="font-size:64px;margin-bottom:16px">✅</div><h2 style="color:#16a34a;font-size:24px;font-weight:800">Comandă plasată!</h2><p style="color:#555;font-size:16px;line-height:1.7;margin-top:8px">Te vom contacta în maxim <strong>24 ore</strong>.</p></div>\n<script>let P=${price},BP=${bumpPrice},q=1,ts=${(data.timerMinutes||14)*60};function r(){const m=String(Math.floor(ts/60)).padStart(2,'0'),s=String(ts%60).padStart(2,'0'),h='<div class=\'tv\'>'+m+'</div><div class=\'tl\'>MIN</div></div><div><span class=\'tv\'>'+s+'</span><span class=\'tl\'>SEC</span></div>';['t1','t2'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=h})}setInterval(()=>{if(ts>0)ts--;r()},1000);r();function cq(d){q=Math.max(1,q+d);document.getElementById('qty').textContent=q;document.getElementById('ql').textContent='×'+q;ut()}function ut(){const b=document.getElementById('bc')?.checked?BP:0,br=document.getElementById('br');if(br)br.style.display=b?'flex':'none';const t=P*q+b;document.getElementById('pd').textContent=(P*q)+' lei';document.getElementById('lp').textContent=(P*q)+' lei';document.getElementById('tp').textContent=t+' lei';document.getElementById('bt').textContent=t}function sub(){const n=document.getElementById('fn')?.value.trim(),t=document.getElementById('ft')?.value.trim(),j=document.getElementById('fj')?.value,a=document.getElementById('fa')?.value.trim();if(!n||!t||!j||!a){alert('Completează toate câmpurile *');return}document.getElementById('page').style.display='none';document.getElementById('success').style.display='block'}<\/script>\n</body>\n</html>`
+
+  const imgTag = (src, alt) => src ? `<img src="${src}" alt="${alt||''}" style="width:100%;height:300px;object-fit:cover;display:block" loading="lazy" onerror="this.style.display='none'">` : ''
+  const benefitRow = (b) => `<div style="display:flex;gap:12px;align-items:flex-start;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:12px 14px;margin-bottom:10px"><span style="color:#16a34a;font-weight:900;font-size:17px;flex-shrink:0">✓</span><span style="font-size:14px;color:#166534;line-height:1.6">${b}</span></div>`
+  const bHtml = (data.benefits||[]).slice(0,3).map(benefitRow).join('')
+  const b2Html = (data.benefits||[]).slice(3).map(benefitRow).join('')
+  const hwHtml = (data.howItWorks||[]).map((s,i) => `<div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:16px"><div style="min-width:36px;height:36px;border-radius:50%;background:#dc2626;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex-shrink:0">${i+1}</div><div style="padding-top:4px"><strong style="font-size:15px;font-weight:700;display:block;margin-bottom:3px">${s.title}</strong><span style="font-size:13px;color:#6b7280;line-height:1.6">${s.desc}</span></div></div>`).join('')
+  const tHtml = (data.testimonials||[]).map(t => `<div style="background:#fff;border:1px solid #f3f4f6;border-radius:14px;padding:14px 16px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div style="display:flex;gap:10px;align-items:center"><div style="width:40px;height:40px;border-radius:50%;background:#fecaca;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#dc2626">${(t.name||'?').charAt(0)}</div><div><strong style="font-size:14px;font-weight:700;display:block">${t.name}</strong><span style="font-size:12px;color:#9ca3af">${t.city}</span></div></div><span style="color:#fbbf24;font-size:16px">${'\u2605'.repeat(t.stars||5)}</span></div><p style="font-size:14px;color:#374151;line-height:1.6;margin:0">"${t.text}"</p></div>`).join('')
+  const fHtml = (data.faq||[]).map(f => `<details style="margin-bottom:10px;border:1.5px solid #f3f4f6;border-radius:12px;overflow:hidden"><summary style="padding:14px 16px;font-size:14px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;background:#fafafa">${f.q}<span style="color:#dc2626;font-size:20px;margin-left:12px">+</span></summary><div style="padding:12px 16px"><p style="font-size:14px;color:#6b7280;line-height:1.7;margin:0">${f.a}</p></div></details>`).join('')
+  const jOpts = JUDETE.map(j => `<option value="${j}">${j}</option>`).join('')
+
+  const html = `<div id="pagecod-page" style="font-family:system-ui,sans-serif;background:#fff;color:#111;max-width:600px;margin:0 auto">
+<div style="background:#111;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600">🚚 LIVRARE GRATUITĂ peste 200 lei · ☎ 0700 000 000</div>
+<div style="background:#dc2626;color:#fff;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+  <div style="font-size:13px;font-weight:700">⚡ Doar <strong>${data.stock||7} bucăți</strong> rămase!</div>
+  <div class="pc-timer" id="pc-t1"></div>
+</div>
+${imgTag(hero, data.productName)}
+<div style="padding:24px 20px 16px">
+  <div style="display:inline-block;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;margin-bottom:12px">OFERTĂ SPECIALĂ · -${disc}% REDUCERE</div>
+  <h1 style="font-size:24px;font-weight:900;line-height:1.25;margin:0 0 10px">${data.headline}</h1>
+  <p style="font-size:15px;color:#555;line-height:1.7;margin:0 0 20px">${data.subheadline}</p>
+  <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-radius:16px;padding:20px;margin-bottom:16px">
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:8px">
+      <span id="pc-pd" style="font-size:38px;font-weight:900;color:#dc2626">${price} lei</span>
+      <span style="font-size:20px;color:#d1d5db;text-decoration:line-through">${oldPrice} lei</span>
+      <span style="background:#dc2626;color:#fff;border-radius:8px;padding:3px 10px;font-size:13px;font-weight:800">-${disc}%</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:14px;color:#6b7280">Cantitate:</span>
+      <div style="display:flex;align-items:center;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden">
+        <button onclick="pcQty(-1)" style="width:38px;height:38px;border:none;background:#f9fafb;font-size:18px;cursor:pointer">−</button>
+        <span id="pc-qty" style="width:40px;text-align:center;font-size:17px;font-weight:800">1</span>
+        <button onclick="pcQty(1)" style="width:38px;height:38px;border:none;background:#f9fafb;font-size:18px;cursor:pointer">+</button>
+      </div>
+    </div>
+  </div>
+  <button onclick="document.getElementById('pc-form').scrollIntoView({behavior:'smooth'})" style="width:100%;padding:16px;border-radius:12px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;font-size:17px;font-weight:800;cursor:pointer">🛒 COMANDĂ ACUM — PLATĂ LA LIVRARE</button>
+  <p style="font-size:12px;color:#9ca3af;text-align:center;margin-top:8px">Nu plătești nimic acum · Livrare 2–4 zile · Ramburs curier</p>
+</div>
+<div style="background:#f9fafb;border-top:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;padding:16px 20px">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">🔒</span><div><div style="font-size:13px;font-weight:700">Plată securizată</div><div style="font-size:12px;color:#9ca3af">100% sigur</div></div></div>
+    <div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">🚚</span><div><div style="font-size:13px;font-weight:700">Livrare rapidă</div><div style="font-size:12px;color:#9ca3af">2–4 zile</div></div></div>
+    <div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">↩️</span><div><div style="font-size:13px;font-weight:700">Retur gratuit</div><div style="font-size:12px;color:#9ca3af">30 de zile</div></div></div>
+    <div style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">⭐</span><div><div style="font-size:13px;font-weight:700">Clienți mulțumiți</div><div style="font-size:12px;color:#9ca3af">4.9/5 stele</div></div></div>
+  </div>
+</div>
+${imgTag(ctx[0],'produs')}
+<div style="padding:24px 20px">
+  <h2 style="font-size:20px;font-weight:800;margin:0 0 16px">De ce să alegi ${data.productName}?</h2>
+  ${bHtml}
+</div>
+${imgTag(ctx[1],'utilizare')}
+<div style="padding:24px 20px">
+  <h2 style="font-size:20px;font-weight:800;margin:0 0 18px">Cum funcționează?</h2>
+  ${hwHtml}
+</div>
+${imgTag(ctx[2],'rezultat')}
+<div style="padding:24px 20px">
+  <h2 style="font-size:20px;font-weight:800;margin:0 0 16px">Mai multe motive să comanzi azi</h2>
+  ${b2Html}
+</div>
+${imgTag(ctx[3],'clienti')}
+<div style="background:#f9fafb;border-top:1px solid #f3f4f6;padding:24px 20px">
+  <h2 style="font-size:20px;font-weight:800;margin:0 0 6px">Ce spun clienții noștri</h2>
+  <p style="font-size:13px;color:#9ca3af;margin-bottom:18px">Peste ${(data.reviewCount||1200).toLocaleString()} recenzii ⭐⭐⭐⭐⭐</p>
+  ${tHtml}
+</div>
+<div style="padding:24px 20px">
+  <h2 style="font-size:20px;font-weight:800;margin:0 0 16px">Întrebări frecvente</h2>
+  ${fHtml}
+</div>
+<div id="pc-form" style="background:linear-gradient(180deg,#fef2f2,#fff);border-top:3px solid #dc2626;padding:24px 20px">
+  <div style="text-align:center;margin-bottom:20px">
+    <p style="font-size:13px;font-weight:700;color:#dc2626;margin:0 0 8px">⏰ Oferta expiră în curând:</p>
+    <div class="pc-timer" id="pc-t2"></div>
+  </div>
+  <h2 style="font-size:22px;font-weight:900;margin:0 0 6px">Comandă acum — Plată la livrare</h2>
+  <p style="font-size:14px;color:#6b7280;margin:0 0 20px;line-height:1.6">Nu plătești nimic acum — curierul îți aduce produsul și plătești la ușă.</p>
+  <div id="pc-success" style="display:none;text-align:center;padding:40px 0">
+    <div style="font-size:56px;margin-bottom:12px">✅</div>
+    <h3 style="color:#16a34a;font-size:22px;font-weight:800">Comandă plasată!</h3>
+    <p style="color:#555;margin-top:8px">Te vom contacta în maxim 24 ore. Plata la livrare.</p>
+  </div>
+  <div id="pc-fields" style="display:flex;flex-direction:column;gap:12px">
+    <input id="pc-nume" placeholder="Nume și prenume *" style="padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;font-size:15px;outline:none;width:100%;box-sizing:border-box;font-family:inherit">
+    <input id="pc-tel" placeholder="Număr de telefon *" style="padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;font-size:15px;outline:none;width:100%;box-sizing:border-box;font-family:inherit">
+    <select id="pc-judet" style="padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;font-size:15px;outline:none;width:100%;box-sizing:border-box;font-family:inherit;color:#9ca3af">
+      <option value="">Selectează județul *</option>
+      ${jOpts}
+    </select>
+    <input id="pc-loc" placeholder="Localitatea *" style="padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;font-size:15px;outline:none;width:100%;box-sizing:border-box;font-family:inherit">
+    <textarea id="pc-adresa" rows="2" placeholder="Strada, număr, bloc, apartament *" style="padding:12px 14px;border-radius:8px;border:1px solid #e2e8f0;font-size:15px;outline:none;width:100%;box-sizing:border-box;font-family:inherit;resize:none"></textarea>
+    ${data.bumpProduct ? `<label style="display:flex;gap:12px;align-items:flex-start;background:#fffbeb;border:2px dashed #fcd34d;border-radius:12px;padding:14px 16px;cursor:pointer"><input type="checkbox" id="pc-bump" onchange="pcUpdateTotal()" style="margin-top:3px;width:18px;height:18px;accent-color:#dc2626"><div><div style="font-size:14px;font-weight:800;color:#92400e;margin-bottom:3px">DA! Adaugă și ${data.bumpProduct}</div><div style="font-size:13px;color:#b45309">Doar +${bumpPrice} lei — ofertă exclusivă</div></div></label>` : ''}
+    <div style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:16px;font-size:14px">
+      <div style="font-weight:700;font-size:12px;color:#9ca3af;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px">Sumar comandă</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;color:#374151"><span>${data.productName} <span id="pc-ql">×1</span></span><span id="pc-lp" style="font-weight:600">${price} lei</span></div>
+      ${data.bumpProduct ? `<div id="pc-br" style="display:none;justify-content:space-between;margin-bottom:8px;color:#374151"><span>${data.bumpProduct}</span><span style="font-weight:600">${bumpPrice} lei</span></div>` : ''}
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;color:#374151"><span>Livrare</span><span style="color:#16a34a;font-weight:700">GRATUITĂ</span></div>
+      <div style="border-top:1.5px solid #f3f4f6;padding-top:10px;display:flex;justify-content:space-between;font-weight:900;font-size:18px"><span>Total la livrare</span><span id="pc-tp" style="color:#dc2626">${price} lei</span></div>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:10px 14px;font-size:13px;color:#15803d;display:flex;gap:8px;align-items:center"><span>🔒</span><span>Plata se face <strong>doar la livrare</strong>. Datele tale sunt în siguranță.</span></div>
+    <button onclick="pcSubmit()" style="padding:17px;border-radius:14px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;font-size:18px;font-weight:900;cursor:pointer;width:100%">🛒 FINALIZEAZĂ — <span id="pc-bt">${price}</span> LEI LA LIVRARE</button>
+    <p style="font-size:12px;color:#9ca3af;text-align:center">Prin plasarea comenzii ești de acord cu Termenii și Condițiile</p>
+  </div>
+</div>
+<div style="background:#111;color:#6b7280;padding:20px;text-align:center;font-size:12px">
+  <p style="margin:0 0 4px;color:#9ca3af;font-weight:600">© 2025 ${data.productName}</p>
+  <p style="margin:0">Termeni · Confidențialitate · ANPC</p>
+</div>
+</div>
+<style>
+.pc-timer{display:flex;gap:8px;justify-content:center}
+.pc-tv{background:#111;color:#fff;border-radius:8px;padding:10px 18px;font-size:26px;font-weight:900;font-family:monospace;min-width:56px;display:block;text-align:center}
+.pc-tl{font-size:10px;color:#999;margin-top:3px;letter-spacing:2px;display:block;text-align:center}
+#pagecod-page *{box-sizing:border-box}
+#pagecod-page input,#pagecod-page select,#pagecod-page textarea{font-family:system-ui,sans-serif}
+</style>
+<script>
+(function(){
+  var P=${price},BP=${bumpPrice},q=1,ts=${(data.timerMinutes||14)*60};
+  function rt(){var m=String(Math.floor(ts/60)).padStart(2,'0'),s=String(ts%60).padStart(2,'0'),h='<div><span class="pc-tv">'+m+'</span><span class="pc-tl">MIN</span></div><div><span class="pc-tv">'+s+'</span><span class="pc-tl">SEC</span></div>';['pc-t1','pc-t2'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML=h});}
+  setInterval(function(){if(ts>0)ts--;rt();},1000);rt();
+  window.pcQty=function(d){q=Math.max(1,q+d);document.getElementById('pc-qty').textContent=q;document.getElementById('pc-ql').textContent='×'+q;pcUpdateTotal();}
+  window.pcUpdateTotal=function(){var b=document.getElementById('pc-bump');var bv=b&&b.checked?BP:0;var br=document.getElementById('pc-br');if(br)br.style.display=bv?'flex':'none';var t=P*q+bv;var pd=document.getElementById('pc-pd');if(pd)pd.textContent=(P*q)+' lei';var lp=document.getElementById('pc-lp');if(lp)lp.textContent=(P*q)+' lei';var tp=document.getElementById('pc-tp');if(tp)tp.textContent=t+' lei';var bt=document.getElementById('pc-bt');if(bt)bt.textContent=t;}
+  window.pcSubmit=function(){var n=document.getElementById('pc-nume').value.trim(),t=document.getElementById('pc-tel').value.trim(),j=document.getElementById('pc-judet').value,a=document.getElementById('pc-adresa').value.trim();if(!n||!t||!j||!a){alert('Completează toate câmpurile *');return;}document.getElementById('pc-fields').style.display='none';document.getElementById('pc-success').style.display='block';}
+})();
+</script>`
+
+  // Wrap in Liquid template format for Shopify
+  const liquidTemplate = `{% comment %}
+  Pagina COD generata de PageCOD
+  Produs: ${data.productName}
+  Data generare: ${new Date().toLocaleDateString('ro-RO')}
+  
+  Instructiuni instalare:
+  1. In Shopify Admin mergi la Online Store > Themes > Edit code
+  2. In sectiunea "Templates" click "Add a new template"
+  3. Selecteaza "page" si pune numele: ${(data.productName||'produs').replace(/[^a-zA-Z0-9]/g,'-').toLowerCase()}
+  4. Sterge tot continutul existent si lipeste acest fisier
+  5. Click Save
+  6. In Shopify Admin mergi la Online Store > Pages
+  7. Selecteaza pagina ta si la "Theme template" alege template-ul nou
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${data.productName} — Comandă acum</title>
+  {{ content_for_header }}
+</head>
+<body>
+
+{{ content_for_layout }}
+
+${html}
+
+</body>
+</html>
+
+{% schema %}
+{
+  "name": "${data.productName}",
+  "settings": []
+}
+{% endschema %}`
+
+  return liquidTemplate
 }
 
 import { useState, useRef, useEffect } from 'react'
@@ -480,14 +642,15 @@ export default function Generator({ user, navigate }) {
       {/* BOTTOM BAR */}
       <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,10,15,0.95)', display:'flex', gap:10, flexShrink:0 }}>
         <button onClick={() => {
-          const html = generateHTML(pageData)
-          const blob = new Blob([html], { type: 'text/html' })
+          const liquid = generateLiquid(pageData)
+          const blob = new Blob([liquid], { type: 'text/plain' })
           const a = document.createElement('a')
           a.href = URL.createObjectURL(blob)
-          a.download = (pageData.productName || 'pagina-cod').replace(/\s+/g, '-').toLowerCase() + '.gempages'
+          const name = (pageData.productName || 'pagina-cod').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()
+          a.download = name + '.liquid'
           a.click()
         }} style={{ padding:11, borderRadius:12, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.04)', fontSize:14, cursor:'pointer', fontWeight:600, color:'#fff', whiteSpace:'nowrap' }}>
-          ⬇️ Export HTML
+          ⬇️ Export Shopify
         </button>
         <button onClick={generate} disabled={regenCount >= 3}
           style={{ flex:1, padding:11, borderRadius:12, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.04)', fontSize:14, cursor: regenCount >= 3 ? 'not-allowed' : 'pointer', fontWeight:600, color: regenCount >= 3 ? 'rgba(255,255,255,0.3)' : '#fff', opacity: regenCount >= 3 ? 0.5 : 1 }}>
