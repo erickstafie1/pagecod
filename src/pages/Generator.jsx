@@ -251,16 +251,24 @@ function LandingPreview({ data, setData, em }) {
 }
 
 export default function Generator({ user, navigate }) {
-  const [aliUrl, setAliUrl] = useState('')
-  const [screen, setScreen] = useState('input')
+  const [aliUrl, setAliUrl] = useState(() => sessionStorage.getItem('gen_url') || '')
+  const [screen, setScreen] = useState(() => sessionStorage.getItem('gen_screen') || 'input')
   const [loadMsg, setLoadMsg] = useState('')
   const [loadPct, setLoadPct] = useState(0)
-  const [pageData, setPageData] = useState(null)
+  const [pageDataRaw, setPageDataRaw] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('gen_data') || 'null') } catch { return null }
+  })
+  const pageData = pageDataRaw
+  const setPageData = (d) => {
+    const val = typeof d === 'function' ? d(pageDataRaw) : d
+    try { sessionStorage.setItem('gen_data', JSON.stringify(val)) } catch {}
+    setPageDataRaw(val)
+  }
   const [em, setEm] = useState(false)
-  const [device, setDevice] = useState('mobile') // mobile | desktop
+  const [device, setDevice] = useState('mobile')
   const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [savedSlug, setSavedSlug] = useState('')
+  const [saved, setSaved] = useState(() => !!sessionStorage.getItem('gen_slug'))
+  const [savedSlug, setSavedSlug] = useState(() => sessionStorage.getItem('gen_slug') || '')
   const [error, setError] = useState('')
   const [credits, setCredits] = useState(null)
 
@@ -302,9 +310,10 @@ export default function Generator({ user, navigate }) {
       const { data } = await res.json()
       setPageData(data)
       setLoadPct(100)
-      setTimeout(() => setScreen('result'), 400)
+      sessionStorage.setItem('gen_screen','result'); sessionStorage.setItem('gen_url', aliUrl.trim()); setTimeout(() => setScreen('result'), 400)
     } catch(e) {
       setError(e.message)
+      sessionStorage.setItem('gen_screen','input')
       setScreen('input')
     }
     clearInterval(tid)
@@ -339,6 +348,7 @@ export default function Generator({ user, navigate }) {
       if (rpcErr) console.error('RPC error:', rpcErr)
 
       setCredits(c => Math.max(0, (c||1) - 1))
+      sessionStorage.setItem('gen_slug', slug)
       setSavedSlug(slug)
       setSaved(true)
     } catch(e) {
@@ -369,7 +379,7 @@ export default function Generator({ user, navigate }) {
     <div style={{ ...G, display:'flex', flexDirection:'column', height:'100vh' }}>
       {/* TOOLBAR */}
       <div style={{ padding:'12px 16px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,10,15,0.95)', flexShrink:0, flexWrap:'wrap' }}>
-        <button onClick={()=>setScreen('input')} style={{ fontSize:13, color:'rgba(255,255,255,0.5)', background:'none', border:'none', cursor:'pointer', padding:'6px 10px', borderRadius:8, whiteSpace:'nowrap' }}>← Înapoi</button>
+        <button onClick={()=>{ sessionStorage.removeItem('gen_data'); sessionStorage.removeItem('gen_screen'); sessionStorage.removeItem('gen_slug'); setScreen('input') }} style={{ fontSize:13, color:'rgba(255,255,255,0.5)', background:'none', border:'none', cursor:'pointer', padding:'6px 10px', borderRadius:8, whiteSpace:'nowrap' }}>← Înapoi</button>
 
         <span style={{ fontSize:14, fontWeight:600, flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:0 }}>{pageData.productName}</span>
 
