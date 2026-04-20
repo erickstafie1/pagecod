@@ -271,6 +271,12 @@ export default function Generator({ user, navigate }) {
   const [savedSlug, setSavedSlug] = useState(() => sessionStorage.getItem('gen_slug') || '')
   const [error, setError] = useState('')
   const [credits, setCredits] = useState(null)
+  const [regenCount, setRegenCount] = useState(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('gen_regens') || '{}')
+      return saved[sessionStorage.getItem('gen_url') || ''] || 0
+    } catch { return 0 }
+  })
 
   useEffect(() => {
     if (user) {
@@ -310,7 +316,17 @@ export default function Generator({ user, navigate }) {
       const { data } = await res.json()
       setPageData(data)
       setLoadPct(100)
-      sessionStorage.setItem('gen_screen','result'); sessionStorage.setItem('gen_url', aliUrl.trim()); setTimeout(() => setScreen('result'), 400)
+      sessionStorage.setItem('gen_screen','result')
+      sessionStorage.setItem('gen_url', aliUrl.trim())
+      // Track regen count per URL
+      try {
+        const regens = JSON.parse(sessionStorage.getItem('gen_regens') || '{}')
+        const key = aliUrl.trim()
+        regens[key] = (regens[key] || 0) + 1
+        sessionStorage.setItem('gen_regens', JSON.stringify(regens))
+        setRegenCount(regens[key])
+      } catch {}
+      setTimeout(() => setScreen('result'), 400)
     } catch(e) {
       setError(e.message)
       sessionStorage.setItem('gen_screen','input')
@@ -379,7 +395,7 @@ export default function Generator({ user, navigate }) {
     <div style={{ ...G, display:'flex', flexDirection:'column', height:'100vh' }}>
       {/* TOOLBAR */}
       <div style={{ padding:'12px 16px', display:'flex', alignItems:'center', gap:10, borderBottom:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,10,15,0.95)', flexShrink:0, flexWrap:'wrap' }}>
-        <button onClick={()=>{ sessionStorage.removeItem('gen_data'); sessionStorage.removeItem('gen_screen'); sessionStorage.removeItem('gen_slug'); setScreen('input') }} style={{ fontSize:13, color:'rgba(255,255,255,0.5)', background:'none', border:'none', cursor:'pointer', padding:'6px 10px', borderRadius:8, whiteSpace:'nowrap' }}>← Înapoi</button>
+        <button onClick={()=>{ sessionStorage.removeItem('gen_data'); sessionStorage.removeItem('gen_screen'); sessionStorage.removeItem('gen_slug'); sessionStorage.removeItem('gen_url'); setScreen('input') }} style={{ fontSize:13, color:'rgba(255,255,255,0.5)', background:'none', border:'none', cursor:'pointer', padding:'6px 10px', borderRadius:8, whiteSpace:'nowrap' }}>← Înapoi</button>
 
         <span style={{ fontSize:14, fontWeight:600, flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:0 }}>{pageData.productName}</span>
 
@@ -444,8 +460,9 @@ export default function Generator({ user, navigate }) {
 
       {/* BOTTOM BAR */}
       <div style={{ padding:'12px 16px', borderTop:'1px solid rgba(255,255,255,0.06)', background:'rgba(10,10,15,0.95)', display:'flex', gap:10, flexShrink:0 }}>
-        <button onClick={generate} style={{ flex:1, padding:11, borderRadius:12, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.04)', fontSize:14, cursor:'pointer', fontWeight:600, color:'#fff' }}>
-          🔄 Regenerează
+        <button onClick={generate} disabled={regenCount >= 3}
+          style={{ flex:1, padding:11, borderRadius:12, border:'1px solid rgba(255,255,255,0.1)', background:'rgba(255,255,255,0.04)', fontSize:14, cursor: regenCount >= 3 ? 'not-allowed' : 'pointer', fontWeight:600, color: regenCount >= 3 ? 'rgba(255,255,255,0.3)' : '#fff', opacity: regenCount >= 3 ? 0.5 : 1 }}>
+          {regenCount >= 3 ? `🔄 Regenerări epuizate (${regenCount}/3)` : `🔄 Regenerează (${regenCount}/3)`}
         </button>
         {!saved && (
           <button onClick={savePage} disabled={saving}
