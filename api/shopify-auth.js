@@ -1,4 +1,3 @@
-// api/shopify/auth.js - Porneste OAuth flow
 const crypto = require("crypto");
 
 module.exports = async function handler(req, res) {
@@ -11,10 +10,8 @@ module.exports = async function handler(req, res) {
   const scopes = "write_online_store_pages,read_online_store_pages,read_products";
   const state = crypto.randomBytes(16).toString("hex");
 
-  // Salveaza state in cookie pentru verificare
   res.setHeader("Set-Cookie", `shopify_state=${state}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=600`);
 
   const authUrl = `https://${shop}/admin/oauth/authorize?client_id=${clientId}&scope=${scopes}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
-
   res.redirect(authUrl);
 };
