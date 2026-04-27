@@ -8,58 +8,65 @@ import Pricing from './pages/Pricing.jsx'
 import PublicPage from './pages/PublicPage.jsx'
 import ShopifyApp from './pages/ShopifyApp.jsx'
 
-function pathToPage(path) {
-  if (path.startsWith('/p/')) return 'public'
-  if (path === '/shopify-app') return 'shopify'
-  if (path === '/generate') return 'generator'
-  if (path === '/dashboard') return 'dashboard'
-  if (path === '/pricing') return 'pricing'
-  if (path === '/login' || path === '/auth') return 'auth'
-  return null
-}
-
 export default function App() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState('loading')
 
   useEffect(() => {
+    const path = window.location.pathname
+    const params = new URLSearchParams(window.location.search)
+
+    // Shopify app — nu necesita auth PageCOD
+    if (path === '/shopify-app') {
+      setLoading(false)
+      setPage('shopify')
+      return
+    }
+
+    // Pagina publica
+    if (path.startsWith('/p/')) {
+      setLoading(false)
+      setPage('public')
+      return
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       const u = session?.user ?? null
       setUser(u)
       setLoading(false)
 
-      const path = window.location.pathname
-      const urlPage = pathToPage(path)
-
-      if (urlPage === 'public') setPage('public')
-      else if (urlPage === 'shopify') setPage('shopify')
-      else if (urlPage === 'generator') setPage(u ? 'generator' : 'auth')
-      else if (urlPage === 'dashboard') setPage(u ? 'dashboard' : 'auth')
-      else if (urlPage === 'pricing') setPage('pricing')
-      else if (urlPage === 'auth') setPage('auth')
+      if (path === '/generate') setPage(u ? 'generator' : 'auth')
+      else if (path === '/dashboard') setPage(u ? 'dashboard' : 'auth')
+      else if (path === '/pricing') setPage('pricing')
+      else if (path === '/login' || path === '/auth') setPage('auth')
       else setPage(u ? 'dashboard' : 'landing')
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null
       setUser(u)
-      const path = window.location.pathname
-      if (!u && !path.startsWith('/p/') && path !== '/pricing' && path !== '/shopify-app') {
+      const p = window.location.pathname
+      if (!u && p !== '/pricing' && !p.startsWith('/p/') && p !== '/shopify-app') {
         navigate('landing')
       }
     })
 
     const handlePop = () => {
-      const urlPage = pathToPage(window.location.pathname)
-      if (urlPage) setPage(urlPage)
+      const p = window.location.pathname
+      if (p === '/shopify-app') setPage('shopify')
+      else if (p.startsWith('/p/')) setPage('public')
+      else if (p === '/generate') setPage(user ? 'generator' : 'auth')
+      else if (p === '/dashboard') setPage(user ? 'dashboard' : 'auth')
+      else if (p === '/pricing') setPage('pricing')
+      else setPage(user ? 'dashboard' : 'landing')
     }
     window.addEventListener('popstate', handlePop)
-    return () => { subscription.unsubscribe(); window.removeEventListener('popstate', handlePop) }
+    return () => { subscription?.unsubscribe(); window.removeEventListener('popstate', handlePop) }
   }, [])
 
   const navigate = (p) => {
-    const paths = { landing:'/', auth:'/login', dashboard:'/dashboard', generator:'/generate', pricing:'/pricing', shopify:'/shopify-app' }
+    const paths = { landing:'/', auth:'/login', dashboard:'/dashboard', generator:'/generate', pricing:'/pricing' }
     window.history.pushState({}, '', paths[p] || '/')
     setPage(p)
     window.scrollTo(0, 0)
@@ -73,8 +80,8 @@ export default function App() {
   )
 
   const props = { user, navigate }
-  if (page === 'public') return <PublicPage />
   if (page === 'shopify') return <ShopifyApp />
+  if (page === 'public') return <PublicPage />
   if (page === 'auth') return <Auth {...props} />
   if (page === 'dashboard') return <Dashboard {...props} />
   if (page === 'generator') return <Generator {...props} />
