@@ -34,7 +34,7 @@ export default function ShopifyApp() {
   async function loadProducts(s, t) {
     setLoading(true)
     try {
-      const res = await fetch('/api/shopify/publish', {
+      const res = await fetch('/api/shopify-publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get_products', shop: s, token: t })
@@ -51,17 +51,17 @@ export default function ShopifyApp() {
     if (!aliUrl.trim() && !selectedProduct) return
     setScreen('generate')
     setError('')
+    setPageData(null)
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          aliUrl: aliUrl.trim() || '',
-          shopifyProduct: selectedProduct 
-        })
+        body: JSON.stringify({ aliUrl: aliUrl.trim() || '' })
       })
-      const { data } = await res.json()
-      setPageData(data)
+      if (!res.ok) throw new Error('Server error ' + res.status)
+      const json = await res.json()
+      if (!json.data) throw new Error('No data returned')
+      setPageData(json.data)
     } catch(e) {
       setError('Eroare la generare: ' + e.message)
       setScreen('products')
@@ -75,7 +75,7 @@ export default function ShopifyApp() {
       // Genereaza HTML-ul paginii
       const html = buildPageHTML(pageData)
       
-      const res = await fetch('/api/shopify/publish', {
+      const res = await fetch('/api/shopify-publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
