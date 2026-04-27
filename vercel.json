@@ -2,17 +2,18 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/((?!assets|favicon).*)", "destination": "/index.html" }
+  ],
+  "headers": [
     {
-      "src": "/shopify-app",
-      "dest": "/index.html",
-      "headers": {
-        "Content-Security-Policy": "frame-ancestors https://*.myshopify.com https://admin.shopify.com",
-        "X-Frame-Options": "ALLOWALL"
-      }
-    },
-    { "src": "/(.*)", "dest": "/index.html" }
+      "source": "/shopify-app(.*)",
+      "headers": [
+        { "key": "Content-Security-Policy", "value": "frame-ancestors https://*.myshopify.com https://admin.shopify.com" },
+        { "key": "X-Frame-Options", "value": "ALLOWALL" }
+      ]
+    }
   ],
   "functions": {
     "api/*.js": { "maxDuration": 30 }
