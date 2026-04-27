@@ -16,6 +16,11 @@
     }
   ],
   "functions": {
-    "api/*.js": { "maxDuration": 30 }
+    "api/generate.js": { "maxDuration": 60 },
+    "api/shopify-auth.js": { "maxDuration": 30 },
+    "api/shopify-callback.js": { "maxDuration": 30 },
+    "api/shopify-publish.js": { "maxDuration": 30 },
+    "api/create-checkout.js": { "maxDuration": 30 },
+    "api/stripe-webhook.js": { "maxDuration": 30 }
   }
 }
