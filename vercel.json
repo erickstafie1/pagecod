@@ -4,6 +4,14 @@
   "outputDirectory": "dist",
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
+    {
+      "src": "/shopify-app",
+      "dest": "/index.html",
+      "headers": {
+        "Content-Security-Policy": "frame-ancestors https://*.myshopify.com https://admin.shopify.com",
+        "X-Frame-Options": "ALLOWALL"
+      }
+    },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
   "functions": {
