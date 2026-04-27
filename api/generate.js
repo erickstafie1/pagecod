@@ -128,21 +128,17 @@ async function generateContextImages(productName, benefits) {
   const b2 = benefits?.[1] || "usor de folosit";
   
   const prompts = [
-    // Poza 1: produs pe fundal alb, professional product photography
-    `Professional product photography of ${productName}, white background, studio lighting, high quality, commercial photo, 4K, sharp focus`,
-    // Poza 2: lifestyle - persoana folosind produsul
-    `Lifestyle photo of a happy Romanian person using ${productName} at home, natural lighting, warm atmosphere, realistic`,
-    // Poza 3: close-up detaliu produs  
-    `Close-up detail shot of ${productName}, macro photography, showing quality and craftsmanship, white background`,
-    // Poza 4: rezultat pozitiv - persoana fericita
-    `Happy satisfied customer with ${productName}, Romanian family home setting, smiling, natural lighting, lifestyle photography`
+    `Professional product photography of ${productName}, white background, studio lighting, high quality, commercial photo, 4K`,
+    `Lifestyle photo of a happy person using ${productName} at home, natural lighting, warm cozy atmosphere`,
+    `Close-up detail shot of ${productName}, macro photography, showing quality and texture, white background`,
+    `Happy satisfied customer holding ${productName}, smiling, home setting, natural lighting`
   ];
 
-  console.log("Generating images with Gemini for:", productName);
+  console.log("Generating 4 images with Gemini for:", productName);
   
-  // Genereaza toate imaginile in paralel
+  // Genereaza toate 4 in paralel
   const results = await Promise.all(
-    prompts.map((prompt, i) => 
+    prompts.map((prompt, i) =>
       generateImageWithGemini(prompt)
         .then(img => { console.log(`Image ${i+1}:`, img ? "OK" : "FAILED"); return img; })
         .catch(e => { console.log(`Image ${i+1} error:`, e.message); return null; })
