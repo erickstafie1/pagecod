@@ -1,16 +1,10 @@
 const https = require("https");
 const http = require("http");
 
-// ScraperAPI - trece de blocarea AliExpress
 function fetchWithScraper(url) {
   const apiKey = process.env.SCRAPER_API_KEY;
-  if (!apiKey) {
-    console.log("No ScraperAPI key, trying direct");
-    return fetchDirect(url);
-  }
-  // ScraperAPI endpoint
+  if (!apiKey) return fetchDirect(url);
   const scraperUrl = `http://api.scraperapi.com?api_key=${apiKey}&url=${encodeURIComponent(url)}&render=false`;
-  console.log("Using ScraperAPI");
   return fetchDirect(scraperUrl);
 }
 
@@ -27,9 +21,7 @@ function fetchDirect(url) {
       timeout: 20000
     }, (res) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        const loc = res.headers.location.startsWith("http")
-          ? res.headers.location
-          : "https://www.aliexpress.com" + res.headers.location;
+        const loc = res.headers.location.startsWith("http") ? res.headers.location : "https://www.aliexpress.com" + res.headers.location;
         return fetchDirect(loc).then(resolve);
       }
       const chunks = [];
@@ -42,72 +34,122 @@ function fetchDirect(url) {
         res.on("data", c => chunks.push(c)); res.on("end", done);
       }
     });
-    req.on("error", (e) => { console.log("Fetch error:", e.message); resolve(""); });
+    req.on("error", () => resolve(""));
     req.on("timeout", () => { req.destroy(); resolve(""); });
   });
 }
 
 function extractImages(html) {
   const images = new Set();
-
-  // Metoda 1: imagePathList JSON (cel mai fiabil)
   try {
     const m = html.match(/"imagePathList"\s*:\s*(\[.*?\])/s);
-    if (m) {
-      const urls = JSON.parse(m[1]);
-      urls.forEach(u => {
-        if (u && typeof u === 'string' && u.startsWith("http")) {
-          images.add(u.replace(/\\/g, ""));
-        }
-      });
-    }
+    if (m) JSON.parse(m[1]).forEach(u => { if (u && u.startsWith("http")) images.add(u); });
   } catch(e) {}
-
-  // Metoda 2: skuImageList
-  try {
-    const m = html.match(/"skuImageList"\s*:\s*(\[.*?\])/s);
-    if (m) {
-      const items = JSON.parse(m[1]);
-      items.forEach(item => {
-        if (item.imageUrl) images.add(item.imageUrl);
-        if (item.imgUrl) images.add(item.imgUrl);
-      });
-    }
-  } catch(e) {}
-
-  // Metoda 3: regex alicdn
   const patterns = [
     /https:\/\/ae\d*\.alicdn\.com\/kf\/[A-Za-z0-9_\-]+\.jpg/gi,
     /https:\/\/ae01\.alicdn\.com\/kf\/[^"'\s<>\\]+\.jpg/gi,
     /https:\/\/ae02\.alicdn\.com\/kf\/[^"'\s<>\\]+\.jpg/gi,
-    /https:\/\/ae03\.alicdn\.com\/kf\/[^"'\s<>\\]+\.jpg/gi,
   ];
   for (const p of patterns) {
     (html.match(p) || []).forEach(url => {
-      const clean = url.replace(/\\u002F/g, "/").replace(/\\/g, "");
-      if (clean.length > 40 && !clean.includes("icon") && !clean.includes("50x50")) {
-        images.add(clean);
-      }
+      const clean = url.replace(/\\u002F/g, "/").replace(/\\/g, "").split(/["'<>\s]/)[0];
+      if (clean.length > 40 && !clean.includes("icon") && !clean.includes("50x50")) images.add(clean);
     });
   }
-
-  console.log("Total images found:", images.size);
   return [...images].slice(0, 8);
 }
 
 function extractMeta(html) {
   let title = "", priceUSD = 0;
-  const tm = html.match(/"subject"\s*:\s*"([^"]{10,200})"/) ||
-             html.match(/"title"\s*:\s*"([^"]{10,200})"/) ||
-             html.match(/<title[^>]*>([^<|]+)/i);
-  if (tm?.[1]) {
-    title = tm[1].replace(/\s*[-|]\s*AliExpress.*$/i, "")
-      .replace(/&amp;/g, "&").replace(/\\u[\dA-F]{4}/gi, "").trim();
-  }
-  const pm = html.match(/"discountPrice"\s*:\s*\{"value"\s*:\s*"([0-9.]+)"/) ||
-             html.match(/US \$\s*([0-9.]+)/);
+  const tm = html.match(/"subject"\s*:\s*"([^"]{10,200})"/) || html.match(/<title[^>]*>([^<|]+)/i);
+  if (tm?.[1]) title = tm[1].replace(/\s*[-|]\s*AliExpress.*$/i, "").replace(/&amp;/g, "&").trim();
+  const pm = html.match(/"discountPrice"\s*:\s*\{"value"\s*:\s*"([0-9.]+)"/) || html.match(/US \$\s*([0-9.]+)/);
   if (pm?.[1]) priceUSD = parseFloat(pm[1]);
   return { title, priceUSD };
+}
+
+// Genereaza imagine cu Gemini Imagen
+async function generateImageWithGemini(prompt) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  return new Promise((resolve) => {
+    const body = JSON.stringify({
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        responseModalities: ["IMAGE"],
+        responseMimeType: "image/jpeg"
+      }
+    });
+
+    const req = https.request({
+      hostname: "generativelanguage.googleapis.com",
+      path: `/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent?key=${apiKey}`,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body)
+      },
+      timeout: 30000
+    }, (res) => {
+      const chunks = [];
+      res.on("data", c => chunks.push(c));
+      res.on("end", () => {
+        try {
+          const data = JSON.parse(Buffer.concat(chunks).toString());
+          // Extrage imaginea base64
+          const parts = data.candidates?.[0]?.content?.parts || [];
+          for (const part of parts) {
+            if (part.inlineData?.mimeType?.startsWith("image/")) {
+              const base64 = part.inlineData.data;
+              resolve(`data:${part.inlineData.mimeType};base64,${base64}`);
+              return;
+            }
+          }
+          resolve(null);
+        } catch(e) {
+          console.error("Gemini parse error:", e.message);
+          resolve(null);
+        }
+      });
+    });
+    req.on("error", (e) => { console.error("Gemini request error:", e.message); resolve(null); });
+    req.on("timeout", () => { req.destroy(); resolve(null); });
+    req.write(body);
+    req.end();
+  });
+}
+
+// Genereaza 4 imagini contextuale cu Gemini
+async function generateContextImages(productName, benefits) {
+  const b1 = benefits?.[0] || "calitate superioara";
+  const b2 = benefits?.[1] || "usor de folosit";
+  
+  const prompts = [
+    // Poza 1: produs pe fundal alb, professional product photography
+    `Professional product photography of ${productName}, white background, studio lighting, high quality, commercial photo, 4K, sharp focus`,
+    // Poza 2: lifestyle - persoana folosind produsul
+    `Lifestyle photo of a happy Romanian person using ${productName} at home, natural lighting, warm atmosphere, realistic`,
+    // Poza 3: close-up detaliu produs  
+    `Close-up detail shot of ${productName}, macro photography, showing quality and craftsmanship, white background`,
+    // Poza 4: rezultat pozitiv - persoana fericita
+    `Happy satisfied customer with ${productName}, Romanian family home setting, smiling, natural lighting, lifestyle photography`
+  ];
+
+  console.log("Generating images with Gemini for:", productName);
+  
+  // Genereaza toate imaginile in paralel
+  const results = await Promise.all(
+    prompts.map((prompt, i) => 
+      generateImageWithGemini(prompt)
+        .then(img => { console.log(`Image ${i+1}:`, img ? "OK" : "FAILED"); return img; })
+        .catch(e => { console.log(`Image ${i+1} error:`, e.message); return null; })
+    )
+  );
+
+  return results.filter(Boolean);
 }
 
 function callClaude(productInfo) {
@@ -118,10 +160,9 @@ function callClaude(productInfo) {
     model: "claude-haiku-4-5-20251001",
     max_tokens: 1800,
     system: "Expert marketing COD România. DOAR JSON valid, fără backtick-uri.",
-    messages: [{ role: "user", content: `Pagina vânzare COD pentru: "${productInfo.title || "produs"}" (~${productInfo.priceUSD} USD).
-Returnează DOAR JSON:
+    messages: [{ role: "user", content: `Pagina vânzare COD pentru: "${productInfo.title||"produs"}" (~${productInfo.priceUSD} USD). Returnează DOAR JSON:
 {
-  "productName":"nume scurt",
+  "productName":"nume scurt comercial",
   "headline":"titlu captivant max 10 cuvinte",
   "subheadline":"2 propoziții convingătoare",
   "price":${rp},"oldPrice":${Math.round(rp*1.6)},"bumpPrice":${Math.round(rp*0.2)},
@@ -130,10 +171,10 @@ Returnează DOAR JSON:
   "howItWorks":[{"title":"Pas 1","desc":"desc 1"},{"title":"Pas 2","desc":"desc 2"},{"title":"Pas 3","desc":"desc 3"}],
   "bumpProduct":"produs complementar",
   "testimonials":[
-    {"text":"testimonial credibil","name":"Nume1","city":"Oraș1","stars":5},
-    {"text":"testimonial 2","name":"Nume2","city":"Oraș2","stars":5},
-    {"text":"testimonial 3","name":"Nume3","city":"Oraș3","stars":5},
-    {"text":"testimonial 4","name":"Nume4","city":"Oraș4","stars":5}
+    {"text":"testimonial credibil","name":"Prenume Nume","city":"Oraș","stars":5},
+    {"text":"t2","name":"Prenume Nume","city":"Oraș","stars":5},
+    {"text":"t3","name":"Prenume Nume","city":"Oraș","stars":5},
+    {"text":"t4","name":"Prenume Nume","city":"Oraș","stars":5}
   ],
   "faq":[
     {"q":"Întrebare produs?","a":"Răspuns."},
@@ -153,9 +194,9 @@ Returnează DOAR JSON:
       res.on("data", c => chunks.push(c));
       res.on("end", () => {
         try {
-          const d = JSON.parse(Buffer.concat(chunks).toString());
-          if (d.error) throw new Error(d.error.message);
-          const text = (d.content || []).map(c => c.text || "").join("");
+          const data = JSON.parse(Buffer.concat(chunks).toString());
+          if (data.error) throw new Error(data.error.message);
+          const text = (data.content || []).map(c => c.text || "").join("");
           const match = text.match(/\{[\s\S]*\}/);
           if (!match) throw new Error("No JSON");
           resolve(JSON.parse(match[0]));
@@ -179,40 +220,55 @@ module.exports = async function handler(req, res) {
     const { aliUrl } = req.body;
     if (!aliUrl) return res.status(400).json({ error: "aliUrl lipseste" });
 
-    console.log("=== START GENERATE ===");
+    console.log("=== GENERATE START ===");
     console.log("URL:", aliUrl);
-    console.log("SCRAPER_API_KEY:", process.env.SCRAPER_API_KEY ? "SET ✓" : "NOT SET ✗");
-    console.log("ANTHROPIC_API_KEY:", process.env.ANTHROPIC_API_KEY ? "SET ✓" : "NOT SET ✗");
+    console.log("SCRAPER_API_KEY:", process.env.SCRAPER_API_KEY ? "SET" : "NOT SET");
+    console.log("GEMINI_API_KEY:", process.env.GEMINI_API_KEY ? "SET" : "NOT SET");
 
-    // Fetch HTML + Claude in paralel
+    // Fetch AliExpress + Claude in paralel
     const [html, copy] = await Promise.all([
-      fetchWithScraper(aliUrl).catch(e => { console.log("Fetch failed:", e.message); return ""; }),
+      fetchWithScraper(aliUrl).catch(() => ""),
       callClaude({ title: "", priceUSD: 0 })
     ]);
 
     console.log("HTML length:", html.length);
 
-    let images = [];
-    if (html.length > 500) {
-      images = extractImages(html);
+    let aliImages = [];
+    if (html.length > 1000) {
+      aliImages = extractImages(html);
       const meta = extractMeta(html);
-      console.log("Meta:", { title: meta.title?.substring(0, 50), priceUSD: meta.priceUSD });
       if (meta.title?.length > 5) copy.productName = meta.title.substring(0, 60);
       if (meta.priceUSD > 0) {
         const rp = Math.round(meta.priceUSD * 5 * 2.5 / 10) * 10;
         copy.price = rp; copy.oldPrice = Math.round(rp * 1.6); copy.bumpPrice = Math.round(rp * 0.2);
       }
-    } else {
-      console.log("HTML too short - AliExpress blocked or ScraperAPI issue");
+      console.log("AliExpress images:", aliImages.length);
     }
 
-    console.log("Final images count:", images.length);
-    console.log("=== END GENERATE ===");
+    // Genereaza imagini cu Gemini
+    const geminiImages = await generateContextImages(copy.productName || "product", copy.benefits);
+    console.log("Gemini images generated:", geminiImages.length);
 
-    copy.images = images;
+    // Combina: poza hero din AliExpress (daca exista) + pozele Gemini
+    let finalImages = [];
+    if (aliImages.length > 0) {
+      // Prima poza = din AliExpress (produsul real)
+      // Restul = generate de Gemini
+      finalImages = [aliImages[0], ...geminiImages];
+    } else {
+      // Toate din Gemini
+      finalImages = geminiImages;
+    }
+
+    copy.images = finalImages;
+    copy.aliImages = aliImages; // pastram si originalele
+
+    console.log("Final images:", finalImages.length);
+    console.log("=== GENERATE END ===");
+
     res.status(200).json({ success: true, data: copy });
   } catch(err) {
-    console.error("Handler error:", err.message);
+    console.error("Error:", err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 };
