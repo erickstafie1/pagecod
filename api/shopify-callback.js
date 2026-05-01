@@ -4,6 +4,7 @@ const crypto = require("crypto");
 function exchangeToken(shop, code) {
   const clientId = process.env.SHOPIFY_CLIENT_ID;
   const clientSecret = process.env.SHOPIFY_CLIENT_SECRET;
+  console.log("Exchange token - shop:", shop, "clientId:", clientId?.substring(0,8));
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({ client_id: clientId, client_secret: clientSecret, code });
     const req = https.request({
@@ -14,7 +15,11 @@ function exchangeToken(shop, code) {
     }, (res) => {
       const chunks = [];
       res.on("data", c => chunks.push(c));
-      res.on("end", () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString())); } catch(e) { reject(e); } });
+      res.on("end", () => {
+        const raw = Buffer.concat(chunks).toString();
+        console.log("Token response status:", res.statusCode, "body:", raw.substring(0, 200));
+        try { resolve(JSON.parse(raw)); } catch(e) { reject(new Error("Parse error: " + raw.substring(0, 100))); }
+      });
     });
     req.on("error", reject);
     req.write(body);
