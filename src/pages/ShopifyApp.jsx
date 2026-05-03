@@ -19,15 +19,30 @@ export default function ShopifyApp() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    // Ia shop si token din URL
     const params = new URLSearchParams(window.location.search)
     const s = params.get('shop')
     const t = params.get('token')
+    
     if (s && t) {
+      // Avem shop si token - merge direct
       setShop(s)
       setToken(t)
       setScreen('products')
       loadProducts(s, t)
+    } else if (s && !t) {
+      // Avem shop dar nu token - redirectam la OAuth
+      window.top.location.href = `/api/shopify-auth?shop=${s}`
+    } else {
+      // Nu avem nimic - incercam sa luam shop din referrer sau param
+      const shopParam = params.get('shop') || 
+        document.referrer.match(/admin\.shopify\.com\/store\/([^/]+)/)?.[1]
+      if (shopParam) {
+        const fullShop = shopParam.includes('.myshopify.com') 
+          ? shopParam 
+          : `${shopParam}.myshopify.com`
+        window.top.location.href = `/api/shopify-auth?shop=${fullShop}`
+      }
+      // Altfel arata connect screen
     }
   }, [])
 
