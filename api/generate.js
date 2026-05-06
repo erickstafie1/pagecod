@@ -1,4 +1,4 @@
-// v5 - gemini parallel cu claude
+// v5 - gemini parallel cu cclaude
 const https = require('https')
 const http = require('http')
 
